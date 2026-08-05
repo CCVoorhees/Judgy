@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0a0614" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Judgy — pass the vibe check to unlock" />
+    <title>Judgy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😈</text></svg>" />
+    <script type="module" crossorigin src="./assets/index-CcFEydVi.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DltQ0KP6.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Ambient background layers -->
+      <div class="bg-glow bg-glow-a" aria-hidden="true"></div>
+      <div class="bg-glow bg-glow-b" aria-hidden="true"></div>
+      <canvas id="ambient-canvas" aria-hidden="true"></canvas>
+      <canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+      <!-- Status pill -->
+      <header class="top-bar">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">JUDGY</span>
+        </div>
+        <div class="status-pill" id="status-pill">
+          <span class="status-icon" id="status-icon">🔒</span>
+          <span class="status-text" id="status-text">Locked</span>
+        </div>
+      </header>
+
+      <!-- Main stage -->
+      <main class="stage">
+        <!-- Headline -->
+        <div class="headline" id="headline">
+          <p class="eyebrow" id="eyebrow">Vibe check required</p>
+          <h1 class="title" id="title">Locked</h1>
+          <p class="subtitle" id="subtitle">This little gremlin won't let you through</p>
+        </div>
+
+        <!-- Character + speech + framed camera -->
+        <div class="character-zone" id="character-zone">
+          <div class="speech" id="speech" data-visible="true">
+            <span id="speech-text">Prove it.</span>
+          </div>
+
+          <!--
+            Challenge layout: large rounded camera window (head + torso + arms),
+            character floats in front as the star. Locked/success: camera hidden.
+          -->
+          <div class="hero-stage" id="hero-stage">
+            <div class="camera-layer" id="camera-layer">
+              <div class="camera-frame">
+                <video id="camera" playsinline muted autoplay></video>
+                <div class="camera-vignette"></div>
+                <div class="camera-scan" aria-hidden="true"></div>
+                <div class="camera-frame-glow" aria-hidden="true"></div>
+              </div>
+            </div>
+
+            <div class="character-wrap" id="character-wrap">
+              <div class="character-shadow"></div>
+              <div class="character" id="character" data-state="judgy">
+                <!-- SVG injected by JS -->
+              </div>
+              <div class="character-ring" id="character-ring" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Challenge HUD -->
+        <div class="challenge-hud" id="challenge-hud" hidden>
+          <div class="pose-hint" id="pose-hint">
+            <div class="pose-icon" aria-hidden="true">🙌</div>
+            <p class="pose-label">Raise both arms straight up</p>
+            <p class="pose-sub">Stand arm’s length — head + arms in frame</p>
+          </div>
+
+          <div class="meter-block">
+            <div class="progress-ring-wrap">
+              <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#c44dff" />
+                    <stop offset="50%" stop-color="#ff2d95" />
+                    <stop offset="100%" stop-color="#39ff14" />
+                  </linearGradient>
+                </defs>
+                <circle class="ring-track" cx="60" cy="60" r="52" />
+                <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" />
+              </svg>
+              <div class="meter-center">
+                <span class="meter-pct" id="meter-pct">0%</span>
+                <span class="meter-label" id="meter-label">hold it</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="live-feedback" id="live-feedback">Camera warming up…</p>
+        </div>
+
+        <!-- Success burst: headline + captured still + share -->
+        <div class="success-burst" id="success-burst" hidden>
+          <div class="unlock-badge">UNLOCKED</div>
+          <p class="success-line">Vibe check complete</p>
+          <p class="success-sub">You're free… for now</p>
+
+          <div class="capture-card" id="capture-card" hidden>
+            <div class="capture-frame">
+              <!-- Caption is baked into the still for share/download -->
+              <img id="capture-img" alt="Your arms-up vibe check photo — Passed the Judgy vibe check" />
+            </div>
+            <div class="capture-actions">
+              <button type="button" class="cta cta-share" id="share-btn">
+                <span class="cta-shine"></span>
+                <span class="cta-label">Share</span>
+              </button>
+              <button type="button" class="cta cta-save" id="save-btn">
+                Save photo
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Bottom CTA -->
+      <footer class="bottom-bar" id="bottom-bar">
+        <button type="button" class="cta cta-primary" id="cta-btn">
+          <span class="cta-shine"></span>
+          <span class="cta-label" id="cta-label">I'm ready</span>
+        </button>
+        <button type="button" class="cta-text" id="done-btn" hidden>
+          I'm done
+        </button>
+        <p class="fine-print" id="fine-print">Camera stays on-device. No uploads. No judgment… wait.</p>
+      </footer>
+
+      <!-- Permission / error toast -->
+      <div class="toast" id="toast" hidden role="status"></div>
+    </div>
+
+  </body>
+</html>
