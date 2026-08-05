@@ -23,6 +23,11 @@ import {
   playVictory,
   haptic,
 } from './audio.js';
+import {
+  captureSuccessStill,
+  shareStill,
+  downloadStill,
+} from './capture.js';
 
 // ── Hold duration for full unlock (ms) ──
 const HOLD_MS = 2800;
@@ -52,6 +57,10 @@ const meterPct = document.getElementById('meter-pct');
 const meterLabel = document.getElementById('meter-label');
 const liveFeedback = document.getElementById('live-feedback');
 const successBurst = document.getElementById('success-burst');
+const captureCard = document.getElementById('capture-card');
+const captureImg = document.getElementById('capture-img');
+const shareBtn = document.getElementById('share-btn');
+const saveBtn = document.getElementById('save-btn');
 const toast = document.getElementById('toast');
 const ambientCanvas = document.getElementById('ambient-canvas');
 const fxCanvas = document.getElementById('fx-canvas');
@@ -82,6 +91,10 @@ let lastTickAt = 0;
 let sassLevel = 0;
 let poseModelReady = false;
 let cameraReady = false;
+/** @type {Blob | null} */
+let successBlob = null;
+/** @type {string | null} */
+let successDataUrl = null;
 
 // Preload pose model in background
 initPose()
@@ -157,6 +170,7 @@ function enterLocked() {
 
   challengeHud.hidden = true;
   successBurst.hidden = true;
+  clearCapture();
   cameraLayer.classList.remove('active');
 
   statusPill.classList.remove('unlocked');
@@ -190,6 +204,7 @@ async function enterChallenge() {
   setProgress(0);
 
   successBurst.hidden = true;
+  clearCapture();
   challengeHud.hidden = false;
 
   statusPill.classList.remove('unlocked');
@@ -236,8 +251,44 @@ async function enterChallenge() {
   }
 }
 
+function clearCapture() {
+  successBlob = null;
+  if (successDataUrl) {
+    // data URLs don't need revoke; keep field clean
+    successDataUrl = null;
+  }
+  captureImg.removeAttribute('src');
+  captureCard.hidden = true;
+  shareBtn.disabled = true;
+  saveBtn.disabled = true;
+}
+
+async function freezeSuccessFrame() {
+  // Grab the live frame *before* UI swaps away from camera
+  const still = captureSuccessStill(video);
+  if (!still) {
+    captureCard.hidden = true;
+    return;
+  }
+  successDataUrl = still.dataUrl;
+  captureImg.src = still.dataUrl;
+  captureCard.hidden = false;
+  shareBtn.disabled = true;
+  saveBtn.disabled = true;
+  try {
+    successBlob = await still.blobPromise;
+  } catch {
+    successBlob = null;
+  }
+  shareBtn.disabled = !successBlob;
+  saveBtn.disabled = !successBlob;
+}
+
 function enterSuccess() {
   mode = 'success';
+  // Capture first while the video stream is still hot
+  const capturePromise = freezeSuccessFrame();
+
   app.className = '';
   app.classList.add('mode-success', 'flash');
   setTimeout(() => app.classList.remove('flash'), 600);
@@ -276,9 +327,11 @@ function enterSuccess() {
   ctaBtn.className = 'cta cta-success';
   ctaLabel.textContent = 'Film another take';
   doneBtn.hidden = false;
-  finePrint.textContent = 'Pro tip: Film your reaction';
+  finePrint.textContent = 'Pro tip: Share your unlock photo';
 
   cancelAnimationFrame(rafId);
+  // Ensure blob readiness without blocking the celebration
+  void capturePromise;
 }
 
 // ── Detection loop ──
@@ -395,6 +448,49 @@ doneBtn.addEventListener('click', () => {
   cameraReady = false;
   enterLocked();
   say(pickLine('judgy'), true);
+});
+
+// Share captured still via Web Share API
+shareBtn.addEventListener('click', async () => {
+  playTap();
+  haptic(10);
+  if (!successBlob) {
+    showToast('Photo not ready yet — try again in a sec.');
+    return;
+  }
+  shareBtn.disabled = true;
+  try {
+    const result = await shareStill(successBlob, {
+      title: 'Judgy',
+      text: 'I passed the Judgy vibe check 🙌',
+    });
+    if (result === 'downloaded') {
+      showToast('Share not available — photo downloaded instead.');
+    } else if (result === 'shared-text') {
+      showToast('Shared! Photo also saved to downloads.');
+    }
+  } catch (err) {
+    if (err && err.name === 'AbortError') {
+      // User cancelled share sheet — silent
+    } else {
+      console.warn(err);
+      showToast('Couldn’t share — try Save photo.');
+    }
+  } finally {
+    shareBtn.disabled = !successBlob;
+  }
+});
+
+// Download / save still
+saveBtn.addEventListener('click', () => {
+  playTap();
+  haptic(8);
+  if (!successBlob) {
+    showToast('Photo not ready yet — try again in a sec.');
+    return;
+  }
+  downloadStill(successBlob);
+  showToast('Photo saved 📸');
 });
 
 // Visibility: pause when backgrounded

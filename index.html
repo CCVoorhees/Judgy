@@ -109,11 +109,27 @@
           <p class="live-feedback" id="live-feedback">Camera warming up…</p>
         </div>
 
-        <!-- Success burst copy (overlayed) -->
+        <!-- Success burst: headline + captured still + share -->
         <div class="success-burst" id="success-burst" hidden>
           <div class="unlock-badge">UNLOCKED</div>
           <p class="success-line">Vibe check complete</p>
           <p class="success-sub">You're free… for now</p>
+
+          <div class="capture-card" id="capture-card" hidden>
+            <div class="capture-frame">
+              <!-- Caption is baked into the still for share/download -->
+              <img id="capture-img" alt="Your arms-up vibe check photo — Passed the Judgy vibe check" />
+            </div>
+            <div class="capture-actions">
+              <button type="button" class="cta cta-share" id="share-btn">
+                <span class="cta-shine"></span>
+                <span class="cta-label">Share</span>
+              </button>
+              <button type="button" class="cta cta-save" id="save-btn">
+                Save photo
+              </button>
+            </div>
+          </div>
         </div>
       </main>
 
