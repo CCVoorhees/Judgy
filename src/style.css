@@ -225,7 +225,10 @@ body {
     border-radius: 32px;
   }
   #app.mode-challenge .character-wrap {
-    width: min(40vw, 140px);
+    width: min(18vw, 72px);
+    right: 5%;
+    bottom: 2%;
+    opacity: 0.55;
   }
   #app.mode-challenge .hero-stage {
     min-height: min(40dvh, 300px);
@@ -884,16 +887,27 @@ body {
 }
 #app.mode-challenge .character-wrap {
   /*
-   * Anchored to lower-center of the camera window so the feed above stays
-   * readable (head + raised arms) while the gremlin remains large & front-stage.
+   * Small, semi-transparent corner badge so the user can see their own
+   * upper body + arms in the camera feed during the hold.
    */
   position: absolute;
-  left: 50%;
-  bottom: 4%;
+  left: auto;
+  right: 6%;
+  bottom: 3%;
   top: auto;
-  transform: translateX(-50%);
-  width: min(46vw, 180px);
-  filter: drop-shadow(0 10px 24px rgba(10, 6, 20, 0.65));
+  transform: none;
+  width: min(22vw, 88px);
+  opacity: 0.58;
+  filter: drop-shadow(0 6px 14px rgba(10, 6, 20, 0.45));
+  pointer-events: none;
+  transition: opacity 0.35s ease, width 0.35s ease;
+}
+#app.mode-challenge .character {
+  /* Soften neon glow so it doesn’t compete with the feed */
+  filter: drop-shadow(0 0 10px rgba(196, 77, 255, 0.35));
+}
+#app.mode-challenge .character-shadow {
+  opacity: 0.35;
 }
 #app.mode-challenge .speech {
   /* Sit above the camera frame so it doesn't cover the face */
@@ -929,10 +943,18 @@ body {
 #app.mode-success .character-wrap {
   position: relative;
   left: auto;
+  right: auto;
   top: auto;
+  bottom: auto;
   transform: none;
   width: min(62vw, 250px);
+  opacity: 1;
   filter: none;
+  pointer-events: auto;
+}
+#app.mode-success .character {
+  filter: drop-shadow(0 0 28px rgba(255, 45, 149, 0.8))
+    drop-shadow(0 0 48px rgba(57, 255, 20, 0.4));
 }
 #app.mode-success .camera-layer {
   opacity: 0;
