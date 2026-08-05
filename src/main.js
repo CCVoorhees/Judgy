@@ -42,6 +42,7 @@ const statusIcon = document.getElementById('status-icon');
 const statusText = document.getElementById('status-text');
 const ctaBtn = document.getElementById('cta-btn');
 const ctaLabel = document.getElementById('cta-label');
+const doneBtn = document.getElementById('done-btn');
 const finePrint = document.getElementById('fine-print');
 const cameraLayer = document.getElementById('camera-layer');
 const video = document.getElementById('camera');
@@ -171,6 +172,7 @@ function enterLocked() {
   ctaBtn.disabled = false;
   ctaBtn.className = 'cta cta-primary';
   ctaLabel.textContent = "I'm ready";
+  doneBtn.hidden = true;
   finePrint.textContent = 'Camera stays on-device. No uploads. No judgment… wait.';
 
   setMood('judgy', 'judgy');
@@ -199,6 +201,7 @@ async function enterChallenge() {
   subtitleEl.hidden = true;
 
   ctaBtn.hidden = true;
+  doneBtn.hidden = true;
   finePrint.textContent =
     'Hold the phone at arm’s length — keep head, torso & both arms in the frame';
 
@@ -271,8 +274,9 @@ function enterSuccess() {
   ctaBtn.hidden = false;
   ctaBtn.disabled = false;
   ctaBtn.className = 'cta cta-success';
-  ctaLabel.textContent = 'Try again';
-  finePrint.textContent = 'You earned it. Film another take?';
+  ctaLabel.textContent = 'Film another take';
+  doneBtn.hidden = false;
+  finePrint.textContent = 'Pro tip: Film your reaction';
 
   cancelAnimationFrame(rafId);
 }
@@ -380,6 +384,17 @@ ctaBtn.addEventListener('click', async () => {
     setMood('judgy', 'judgy');
     enterChallenge();
   }
+});
+
+// Success secondary: exit cleanly back to locked
+doneBtn.addEventListener('click', () => {
+  playTap();
+  haptic(8);
+  fx.clear();
+  stopCamera(video);
+  cameraReady = false;
+  enterLocked();
+  say(pickLine('judgy'), true);
 });
 
 // Visibility: pause when backgrounded
